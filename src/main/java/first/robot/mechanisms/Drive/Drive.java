@@ -9,14 +9,12 @@ import org.wpilib.math.estimator.DifferentialDrivePoseEstimator;
 import org.wpilib.math.geometry.Pose2d;
 import org.wpilib.math.linalg.VecBuilder;
 import org.wpilib.math.util.Units;
-import org.wpilib.networktables.DoublePublisher;
-import org.wpilib.networktables.NetworkTableInstance;
+import org.wpilib.telemetry.Telemetry;
 
 public class Drive implements Mechanism {
 
   private final DriveIO io;
   private final DriveIOInputs driveInputs = new DriveIOInputs();
-  private final DoublePublisher leftVolts;
 
   private final DifferentialDrivePoseEstimator poseEstimator =
       new DifferentialDrivePoseEstimator(
@@ -30,11 +28,6 @@ public class Drive implements Mechanism {
   public Drive(DriveIO newDriveIO) {
     io = newDriveIO;
 
-    leftVolts =
-        NetworkTableInstance.getDefault()
-            .getTable("DriveInputs")
-            .getDoubleTopic("LeftVolts")
-            .publish();
     getRegisteredScheduler().addPeriodic(() -> periodic());
   }
 
@@ -46,8 +39,7 @@ public class Drive implements Mechanism {
   public void periodic() {
     io.updateInputs(driveInputs);
     updateOdometry();
-    getPose();
-    leftVolts.set(driveInputs.leftAppliedVolts);
+    Telemetry.log("Position", getPose());
   }
 
   public void setPose(Pose2d pose) {
