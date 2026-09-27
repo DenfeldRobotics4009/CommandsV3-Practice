@@ -1,6 +1,6 @@
-package first.robot.mechanisms.Drive;
+package first.robot.mechanisms.drive;
 
-import first.robot.mechanisms.Drive.DriveIO.DriveIOInputs;
+import first.robot.mechanisms.drive.DriveIO.DriveIOInputs;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.wpilib.command3.Command;

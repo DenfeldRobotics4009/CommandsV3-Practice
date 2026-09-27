@@ -1,9 +1,9 @@
 package first.robot;
 
-import first.robot.mechanisms.Drive.Drive;
-import first.robot.mechanisms.Drive.DriveIO;
-import first.robot.mechanisms.Drive.DriveIOKitBot;
-import first.robot.mechanisms.Drive.DriveIOSim;
+import first.robot.mechanisms.drive.Drive;
+import first.robot.mechanisms.drive.DriveIO;
+import first.robot.mechanisms.drive.DriveIOKitBot;
+import first.robot.mechanisms.drive.DriveIOSim;
 import org.wpilib.command3.Command;
 import org.wpilib.command3.button.CommandSwitch2ProController;
 
