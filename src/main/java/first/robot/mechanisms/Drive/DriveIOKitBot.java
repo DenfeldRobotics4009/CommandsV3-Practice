@@ -1,14 +1,21 @@
 package first.robot.mechanisms.Drive;
 
+import com.ctre.phoenix6.BaseStatusSignal;
+import com.ctre.phoenix6.StatusSignal;
+import com.ctre.phoenix6.configs.Pigeon2Configuration;
+import com.ctre.phoenix6.hardware.Pigeon2;
 import com.revrobotics.PersistMode;
+import com.revrobotics.RelativeEncoder;
 import com.revrobotics.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.config.EncoderConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import first.robot.Constants.DriveConstants;
-import org.wpilib.hardware.rotation.Encoder;
-import org.wpilib.simulation.DifferentialDrivetrainSim;
-import org.wpilib.simulation.EncoderSim;
+import org.wpilib.math.geometry.Rotation2d;
+import org.wpilib.math.util.Units;
+import org.wpilib.units.measure.Angle;
+import org.wpilib.units.measure.AngularVelocity;
 
 public class DriveIOKitBot implements DriveIO {
 
@@ -25,18 +32,17 @@ public class DriveIOKitBot implements DriveIO {
       new SparkMax(
           DriveConstants.driveCanPort, DriveConstants.rightFollowerCanId, MotorType.kBrushless);
 
-  private final Encoder leftEncoder =
-      new Encoder(DriveConstants.leftEncoderPort1, DriveConstants.leftEncoderPort2);
-  private final Encoder rightEncoder =
-      new Encoder(DriveConstants.rightEncoderPort1, DriveConstants.rightEncoderPort2);
-
-  // simulator
-  private final EncoderSim leftEncoderSim = new EncoderSim(leftEncoder);
-  private final EncoderSim rightEncoderSim = new EncoderSim(rightEncoder);
+  private RelativeEncoder leftEncoder;
+  private RelativeEncoder rightEncoder;
+  private final Pigeon2 pigeon = new Pigeon2(DriveConstants.pigeonCanId, DriveConstants.driveCAN);
+  private final StatusSignal<Angle> yaw = pigeon.getYaw();
+  private final StatusSignal<AngularVelocity> yawVelocity = pigeon.getAngularVelocityZWorld();
 
   public DriveIOKitBot() {
     SparkMaxConfig leftLeaderConfig = new SparkMaxConfig();
     leftLeaderConfig.inverted(false);
+    leftLeaderConfig.encoder.apply(new EncoderConfig());
+
     SparkMaxConfig leftFollowConfig = new SparkMaxConfig();
     leftFollowConfig.follow(leftLeader);
 
@@ -50,6 +56,7 @@ public class DriveIOKitBot implements DriveIO {
     // gearbox is constructed, you might have to invert the left side instead.
     SparkMaxConfig rightLeaderConfig = new SparkMaxConfig();
     rightLeaderConfig.inverted(true);
+    leftLeaderConfig.encoder.apply(new EncoderConfig().inverted(true));
     SparkMaxConfig rightFollowConfig = new SparkMaxConfig();
     rightFollowConfig.follow(rightLeader);
 
@@ -58,45 +65,53 @@ public class DriveIOKitBot implements DriveIO {
     rightFollower.configure(
         rightFollowConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
 
-    // Set the distance per pulse for the drive encoders. We can simply use the
-    // distance traveled for one rotation of the wheel divided by the encoder
-    // resolution.
-    leftEncoder.setDistancePerPulse(
-        2 * Math.PI * DriveConstants.wheelRadiusMeters / DriveConstants.encoderResolution);
-    rightEncoder.setDistancePerPulse(
-        2 * Math.PI * DriveConstants.wheelRadiusMeters / DriveConstants.encoderResolution);
+    leftEncoder = leftLeader.getEncoder();
+    rightEncoder = rightLeader.getEncoder();
 
-    leftEncoder.reset();
-    rightEncoder.reset();
+    pigeon.getConfigurator().apply(new Pigeon2Configuration());
+    pigeon.getConfigurator().setYaw(0.0);
+    BaseStatusSignal.setUpdateFrequencyForAll(50.0, yaw, yawVelocity);
+    pigeon.optimizeBusUtilization();
   }
 
   @Override
-  public void setVoltage(double leftVolts, double rightVolts) {
-    // TODO Auto-generated method stub
-    leftLeader.setVoltage(leftVolts);
-    rightLeader.setVoltage(rightVolts);
-  }
+  public DriveIOInputs updateInputs(DriveIOInputs inputs) {
+    inputs.leftAppliedVolts = leftLeader.getAppliedOutput().get();
+    inputs.rightAppliedVolts = rightLeader.getAppliedOutput().get();
 
-  @Override
-  public void updateInputs(DriveIOInputs inputs) {
-    inputs.leftAppliedVolts = leftLeader.getBusVoltage().get();
-    inputs.rightAppliedVolts = rightLeader.getBusVoltage().get();
+    inputs.leftVelocityMetersPerSec = getLeftEncoderVelocityMetersPerSecond();
+    inputs.rightVelocityMetersPerSec = getRightEncoderVelocityMetersPerSecond();
 
-    inputs.leftVelocityMetersPerSec = leftEncoder.getRate();
-    inputs.rightVelocityMetersPerSec = rightEncoder.getRate();
-
-    inputs.leftPositionMeters = leftEncoder.getDistance();
-    inputs.rightPositionMeters = rightEncoder.getDistance();
+    inputs.leftPositionMeters = getLeftEncoderPositionMeters();
+    inputs.rightPositionMeters = getRightEncoderPositionMeters();
 
     inputs.leftCurrentAmps = null;
     inputs.rightCurrentAmps = null;
+
+    inputs.yawPosition = Rotation2d.fromDegrees(yaw.getValueAsDouble());
+    inputs.yawVelocityRadPerSec = Units.degreesToRadians(yawVelocity.getValueAsDouble());
+    return inputs;
   }
 
   @Override
-  public void updateSim(DifferentialDrivetrainSim drivetrainSimulator) {
-    leftEncoderSim.setDistance(drivetrainSimulator.getLeftPosition());
-    leftEncoderSim.setRate(drivetrainSimulator.getLeftVelocity());
-    rightEncoderSim.setDistance(drivetrainSimulator.getRightPosition());
-    rightEncoderSim.setRate(drivetrainSimulator.getRightVelocity());
+  public void setThrottle(double leftThrottle, double rightThrottle) {
+    leftLeader.setThrottle(leftThrottle);
+    rightLeader.setThrottle(rightThrottle);
+  }
+
+  private double getLeftEncoderPositionMeters() {
+    return leftEncoder.getPosition().get() * 2 * Math.PI * DriveConstants.wheelRadiusMeters;
+  }
+
+  private double getRightEncoderPositionMeters() {
+    return rightEncoder.getPosition().get() * 2 * Math.PI * DriveConstants.wheelRadiusMeters;
+  }
+
+  private double getLeftEncoderVelocityMetersPerSecond() {
+    return (leftEncoder.getVelocity().get() / 60) * 2 * Math.PI * DriveConstants.wheelRadiusMeters;
+  }
+
+  private double getRightEncoderVelocityMetersPerSecond() {
+    return (rightEncoder.getVelocity().get() / 60) * 2 * Math.PI * DriveConstants.wheelRadiusMeters;
   }
 }

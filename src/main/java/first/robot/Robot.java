@@ -53,7 +53,9 @@ public class Robot extends LoggedRobot {
 
   /** This function is called periodically during all modes. */
   @Override
-  public void robotPeriodic() {}
+  public void robotPeriodic() {
+    Scheduler.getDefault().run();
+  }
 
   /** This function is run once each time the robot enters autonomous mode. */
   @Override

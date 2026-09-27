@@ -3,8 +3,7 @@ package first.robot;
 import first.robot.mechanisms.Drive.Drive;
 import first.robot.mechanisms.Drive.DriveIO;
 import first.robot.mechanisms.Drive.DriveIOKitBot;
-import first.robot.mechanisms.Drive.GyroIO;
-import first.robot.mechanisms.Drive.GyroIOPigeon2;
+import first.robot.mechanisms.Drive.DriveIOSim;
 import org.wpilib.command3.Command;
 import org.wpilib.command3.button.CommandSwitch2ProController;
 
@@ -18,17 +17,17 @@ public class RobotContainer {
     switch (Constants.currentMode) {
       case REAL:
         // Real robot, instantiate hardware IO implementations
-        drive = new Drive(new DriveIOKitBot(), new GyroIOPigeon2());
+        drive = new Drive(new DriveIOKitBot());
         break;
 
       case SIM:
         // Sim robot, instantiate physics sim IO implementations
-        drive = new Drive(new DriveIOKitBot(), new GyroIOPigeon2());
+        drive = new Drive(new DriveIOSim());
         break;
 
       default:
         // Replayed robot, disable IO implementations
-        drive = new Drive(new DriveIO() {}, new GyroIO() {});
+        drive = new Drive(new DriveIO() {});
         break;
     }
 

@@ -1,7 +1,8 @@
 package first.robot.mechanisms.Drive;
 
 import org.littletonrobotics.junction.AutoLog;
-import org.wpilib.simulation.DifferentialDrivetrainSim;
+import org.littletonrobotics.junction.AutoLogOutput;
+import org.wpilib.math.geometry.Rotation2d;
 
 public interface DriveIO {
   @AutoLog
@@ -15,11 +16,15 @@ public interface DriveIO {
     public double rightVelocityMetersPerSec = 0.0;
     public double rightAppliedVolts = 0.0;
     public double[] rightCurrentAmps = new double[] {};
+
+    public Rotation2d yawPosition = Rotation2d.ZERO;
+    public double yawVelocityRadPerSec = 0.0;
   }
 
-  public default void updateInputs(DriveIOInputs inputs) {}
+  @AutoLogOutput
+  public default DriveIOInputs updateInputs(DriveIOInputs inputs) {
+    return inputs;
+  }
 
-  public default void setVoltage(double leftVolts, double rightVolts) {}
-
-  public default void updateSim(DifferentialDrivetrainSim drivetrainSimulator) {}
+  public default void setThrottle(double leftThrottle, double rightThrottle) {}
 }
