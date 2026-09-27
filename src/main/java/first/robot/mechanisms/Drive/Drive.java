@@ -1,9 +1,7 @@
 package first.robot.mechanisms.Drive;
 
 import first.robot.mechanisms.Drive.DriveIO.DriveIOInputs;
-import java.util.function.Supplier;
 import org.littletonrobotics.junction.AutoLogOutput;
-import org.wpilib.command3.Command;
 import org.wpilib.command3.Mechanism;
 import org.wpilib.math.estimator.DifferentialDrivePoseEstimator;
 import org.wpilib.math.geometry.Pose2d;
@@ -13,7 +11,7 @@ import org.wpilib.telemetry.Telemetry;
 
 public class Drive implements Mechanism {
 
-  private final DriveIO io;
+  private final DriveIO driveIO;
   private final DriveIOInputs driveInputs = new DriveIOInputs();
 
   private final DifferentialDrivePoseEstimator poseEstimator =
@@ -26,7 +24,7 @@ public class Drive implements Mechanism {
           VecBuilder.fill(0.5, 0.5, Units.degreesToRadians(30)));
 
   public Drive(DriveIO newDriveIO) {
-    io = newDriveIO;
+    driveIO = newDriveIO;
 
     getRegisteredScheduler().addPeriodic(() -> periodic());
   }
@@ -37,7 +35,7 @@ public class Drive implements Mechanism {
   }
 
   public void periodic() {
-    io.updateInputs(driveInputs);
+    driveIO.updateInputs(driveInputs);
     updateOdometry();
     Telemetry.log("Position", getPose());
   }
@@ -55,17 +53,5 @@ public class Drive implements Mechanism {
     return poseEstimator.getEstimatedPosition();
   }
 
-  public Command drive(Supplier<Double> forwardSupplier, Supplier<Double> turnSupplier) {
-    return this.run(
-            coro -> {
-              while (true) {
-                io.setThrottle(
-                    forwardSupplier.get() - turnSupplier.get(),
-                    forwardSupplier.get() + turnSupplier.get());
-                coro.yield();
-              }
-            })
-        .withPriority(Command.LOWEST_PRIORITY)
-        .named("Drive");
-  }
+
 }
