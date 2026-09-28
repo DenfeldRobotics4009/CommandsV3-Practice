@@ -1,4 +1,4 @@
-package first.robot.mechanisms.drive;
+package first.robot.mechanisms.drivetest;
 
 import org.littletonrobotics.junction.AutoLog;
 import org.littletonrobotics.junction.AutoLogOutput;
