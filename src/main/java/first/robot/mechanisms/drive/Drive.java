@@ -1,4 +1,4 @@
-package first.robot.mechanisms.drivewe;
+package first.robot.mechanisms.drive;
 
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.wpilib.command3.Mechanism;
@@ -8,7 +8,7 @@ import org.wpilib.math.linalg.VecBuilder;
 import org.wpilib.math.util.Units;
 import org.wpilib.telemetry.Telemetry;
 
-import first.robot.mechanisms.drivewe.DriveIO.DriveIOInputs;
+import first.robot.mechanisms.drive.DriveIO.DriveIOInputs;
 
 public class Drive implements Mechanism {
 
