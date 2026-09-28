@@ -1,4 +1,4 @@
-package first.robot.mechanisms.drivetest;
+package first.robot.mechanisms.drive;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
