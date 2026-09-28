@@ -1,4 +1,4 @@
-package first.robot.mechanisms.drive;
+package first.robot.mechanisms.drivewe;
 
 import com.revrobotics.sim.SparkMaxSim;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
