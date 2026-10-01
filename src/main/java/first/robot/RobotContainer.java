@@ -19,7 +19,7 @@ public class RobotContainer {
 
       case SIM:
         myPrinter = new Printer("Ado World Domination!!");
-        myDrive = new Drive(new DriveIOSim()); 
+        myDrive = new Drive(new DriveIOSim());
         break;
 
       default:
@@ -31,6 +31,8 @@ public class RobotContainer {
 
   private void configureButtonBindings() {
     controller.a().onTrue(myPrinter.printSavedMessage());
+    myDrive.setDefaultCommand(
+        myDrive.arcadeDrive(() -> -controller.getLeftY(), () -> controller.getLeftX()));
   }
 
   public Command getAutonomousCommand() {

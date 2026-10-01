@@ -27,7 +27,7 @@ public class DriveIOSim implements DriveIO {
   private final SparkMaxSim rightMaxSim = new SparkMaxSim(rightLeader, DCMotor.getNEO(2));
 
   private final LinearSystem<N2, N2, N2> drivetrainSystem =
-      Models.differentialDriveFromSysId(1.98, 0.2, 4, 0.3);
+      Models.differentialDriveFromSysId(1.99, 0.5, 6, 0.6);
   private final DifferentialDrivetrainSim drivetrainSimulator =
       new DifferentialDrivetrainSim(
           drivetrainSystem,
