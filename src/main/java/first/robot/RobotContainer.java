@@ -31,6 +31,8 @@ public class RobotContainer {
 
   private void configureButtonBindings() {
     controller.a().onTrue(myPrinter.printSavedMessage());
+    myDrive.setDefaultCommand(
+        myDrive.arcadeDrive(() -> -controller.getLeftY(), () -> controller.getRightX()));
   }
 
   public Command getAutonomousCommand() {

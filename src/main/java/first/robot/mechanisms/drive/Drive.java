@@ -1,7 +1,9 @@
 package first.robot.mechanisms.drive;
 
 import first.robot.mechanisms.drive.DriveIO.DriveIOInputs;
+import java.util.function.Supplier;
 import org.littletonrobotics.junction.AutoLogOutput;
+import org.wpilib.command3.Command;
 import org.wpilib.command3.Mechanism;
 import org.wpilib.math.estimator.DifferentialDrivePoseEstimator;
 import org.wpilib.math.geometry.Pose2d;
@@ -51,5 +53,15 @@ public class Drive implements Mechanism {
   @AutoLogOutput
   public Pose2d getPose() {
     return poseEstimator.getEstimatedPosition();
+  }
+
+  public Command arcadeDrive(Supplier<Double> forwards, Supplier<Double> turn) {
+    return this.run(
+            coro -> {
+              driveIO.setThrottle(
+                  // forward: .5  turn: -1
+                  forwards.get() + turn.get(), forwards.get() - turn.get());
+            })
+        .named("Arcade Drive");
   }
 }
