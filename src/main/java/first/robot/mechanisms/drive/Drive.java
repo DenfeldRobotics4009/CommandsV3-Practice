@@ -1,14 +1,15 @@
 package first.robot.mechanisms.drive;
 
+import first.robot.mechanisms.drive.DriveIO.DriveIOInputs;
+import java.util.function.Supplier;
 import org.littletonrobotics.junction.AutoLogOutput;
+import org.wpilib.command3.Command;
 import org.wpilib.command3.Mechanism;
 import org.wpilib.math.estimator.DifferentialDrivePoseEstimator;
 import org.wpilib.math.geometry.Pose2d;
 import org.wpilib.math.linalg.VecBuilder;
 import org.wpilib.math.util.Units;
 import org.wpilib.telemetry.Telemetry;
-
-import first.robot.mechanisms.drive.DriveIO.DriveIOInputs;
 
 public class Drive implements Mechanism {
 
@@ -52,5 +53,15 @@ public class Drive implements Mechanism {
   @AutoLogOutput
   public Pose2d getPose() {
     return poseEstimator.getEstimatedPosition();
+  }
+
+  public Command drive(Supplier<Double> forwardJoystick, Supplier<Double> turnJoystick) {
+    return this.run(
+            coro -> {
+              driveIO.setThrottle(
+                  forwardJoystick.get() - turnJoystick.get(),
+                  forwardJoystick.get() + turnJoystick.get());
+            })
+        .named("drive");
   }
 }
